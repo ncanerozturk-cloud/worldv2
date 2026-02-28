@@ -1,5 +1,6 @@
 import os
 from datetime import datetime
+from typing import Optional
 
 from anthropic import Anthropic
 from dotenv import load_dotenv
@@ -104,7 +105,7 @@ class HealthSportAgent:
 
         return assistant_message
 
-    def remember(self, text: str, tags: list[str] | None = None) -> str:
+    def remember(self, text: str, tags: Optional[list] = None) -> str:
         """Manually save a health or sport observation to memory."""
         metadata = {
             "agent": AGENT_NAME,

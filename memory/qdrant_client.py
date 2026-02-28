@@ -16,10 +16,9 @@ VECTOR_SIZE = 1536
 
 class QdrantMemory:
     def __init__(self):
-        self.client = QdrantClient(
-            host=os.getenv("QDRANT_HOST", "localhost"),
-            port=int(os.getenv("QDRANT_PORT", 6333)),
-        )
+        host = os.getenv("QDRANT_HOST", "localhost")
+        port = int(os.getenv("QDRANT_PORT", 6333))
+        self.client = QdrantClient(url=f"http://{host}:{port}")
         self.openai = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
         self._ensure_collection()
 
@@ -82,9 +81,9 @@ class QdrantMemory:
                 must=[FieldCondition(key="agent", match=MatchValue(value=agent))]
             )
 
-        results = self.client.search(
+        results = self.client.query_points(
             collection_name=COLLECTION_NAME,
-            query_vector=vector,
+            query=vector,
             limit=top_k,
             query_filter=query_filter,
             with_payload=True,
@@ -96,5 +95,5 @@ class QdrantMemory:
                 "score": round(hit.score, 4),
                 "metadata": {k: v for k, v in hit.payload.items() if k != "text"},
             }
-            for hit in results
+            for hit in results.points
         ]

@@ -1,5 +1,6 @@
 import os
 import logging
+from typing import Optional
 
 from dotenv import load_dotenv
 from slack_bolt import App
@@ -28,8 +29,8 @@ log.info("Initialising Health & Sport Agent...")
 agent = HealthSportAgent()
 
 CHANNEL_MAP = {
-    "health": agent,
-    "sport":  agent,
+    "md_health_agent":    agent,
+    "coach_sport_agent":  agent,
 }
 
 # ---------------------------------------------------------------------------
@@ -38,7 +39,7 @@ CHANNEL_MAP = {
 app = App(token=os.getenv("SLACK_BOT_TOKEN"))
 
 
-def resolve_agent(channel_id: str, client) -> HealthSportAgent | None:
+def resolve_agent(channel_id: str, client) -> Optional[HealthSportAgent]:
     """Return the agent assigned to this channel, or None if unrecognised."""
     try:
         info = client.conversations_info(channel=channel_id)
@@ -52,29 +53,52 @@ def resolve_agent(channel_id: str, client) -> HealthSportAgent | None:
 @app.event("message")
 def handle_message(event, say, client):
     """Route incoming Slack messages to the appropriate agent."""
-    if event.get("bot_id") or event.get("subtype"):
+    log.info(f"[EVENT] message received: {event}")
+
+    bot_id = event.get("bot_id")
+    subtype = event.get("subtype")
+    if bot_id or subtype:
+        log.info(f"[SKIP] Ignoring event — bot_id={bot_id}, subtype={subtype}")
         return
 
     user_text = event.get("text", "").strip()
     channel_id = event.get("channel")
+    user_id = event.get("user")
+
+    log.info(f"[MSG] user={user_id} channel={channel_id} text={user_text[:120]!r}")
 
     if not user_text:
+        log.info("[SKIP] Empty message text.")
         return
 
     routed_agent = resolve_agent(channel_id, client)
 
     if routed_agent is None:
-        log.info(f"No agent mapped for channel {channel_id} — ignoring.")
+        log.warning(f"[ROUTE] No agent mapped for channel {channel_id} — ignoring.")
         return
 
-    log.info(f"Message received: {user_text[:80]}")
+    log.info(f"[ROUTE] Dispatching to {routed_agent.__class__.__name__}")
 
     try:
         response = routed_agent.chat(user_text)
+        log.info(f"[REPLY] {response[:120]!r}")
         say(response)
     except Exception as e:
-        log.error(f"Agent error: {e}")
+        log.error(f"[ERROR] Agent error: {e}", exc_info=True)
         say(f"Something went wrong: {e}")
+
+
+@app.event("app_mention")
+def handle_mention(event, say, client):
+    """Catch direct @mentions — useful for debugging event delivery."""
+    log.info(f"[MENTION] event: {event}")
+    handle_message(event, say, client)
+
+
+@app.error
+def handle_error(error, body):
+    """Log any unhandled Slack Bolt errors."""
+    log.error(f"[BOLT ERROR] {error} | body: {body}", exc_info=True)
 
 
 # ---------------------------------------------------------------------------
