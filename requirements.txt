@@ -1,0 +1,6 @@
+anthropic
+qdrant-client
+slack-bolt
+python-dotenv
+openai
+apscheduler
