@@ -10,6 +10,7 @@ from slack_bolt.adapter.socket_mode import SocketModeHandler
 from memory.qdrant_client import QdrantMemory
 from memory.file_ingestor import FileIngestor
 from agents.health_agent import HealthSportAgent
+import ws_server
 
 load_dotenv()
 
@@ -24,6 +25,9 @@ CHANNEL_MAP: dict = {}
 # ---------------------------------------------------------------------------
 # Initialise core components
 # ---------------------------------------------------------------------------
+log.info("Starting WebSocket dashboard server...")
+ws_server.start()
+
 log.info("Initialising Qdrant memory...")
 memory = QdrantMemory()
 ingestor = FileIngestor(memory)
@@ -112,6 +116,7 @@ def handle_message(event, say, client):
         return
 
     log.info(f"[ROUTE] Dispatching to {routed_agent.__class__.__name__}")
+    ws_server.send_event({"type": "message_received", "text": user_text, "channel": channel_id})
 
     try:
         response = routed_agent.chat(user_text)

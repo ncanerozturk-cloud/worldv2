@@ -8,6 +8,7 @@ from anthropic import Anthropic
 from dotenv import load_dotenv
 
 from memory.qdrant_client import QdrantMemory
+import ws_server
 
 load_dotenv()
 
@@ -93,6 +94,7 @@ class HealthSportAgent:
         lines = []
 
         # 1. Semantic search
+        ws_server.send_event({"type": "memory_search"})
         results = self.memory.search(query=query, top_k=6, agent=AGENT_NAME)
         if results:
             lines.append("=== Relevant Memories ===")
@@ -158,6 +160,7 @@ class HealthSportAgent:
                             "type": "auto_fact",
                         },
                     )
+                    ws_server.send_event({"type": "memory_save", "content": fact[:80]})
             if facts:
                 log.info(f"[AUTO-SAVE] Extracted and saved {len(facts)} personal facts")
 
@@ -170,6 +173,7 @@ class HealthSportAgent:
 
         self.conversation_history.append({"role": "user", "content": user_message})
 
+        ws_server.send_event({"type": "agent_responding"})
         response = self.client.messages.create(
             model="claude-opus-4-6",
             max_tokens=4096,
@@ -189,10 +193,12 @@ class HealthSportAgent:
                 "type": "conversation",
             },
         )
+        ws_server.send_event({"type": "memory_save", "content": user_message[:80]})
 
         # Auto-extract and save individual personal facts
         self._extract_and_save_facts(user_message, assistant_message)
 
+        ws_server.send_event({"type": "agent_done"})
         return assistant_message
 
     def remember(self, text: str, tags: Optional[list] = None) -> str:
