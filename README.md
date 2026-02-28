@@ -10,7 +10,7 @@
 
 **worldv2** is a deployable AI agent ecosystem that gives you a private, self-hosted intelligence layer across health, fitness, finance, and career domains. Unlike generic AI assistants that serve millions with one-size-fits-all responses, worldv2 is architected for a single user: **You**.
 
-Deploy it once. It learns your history, understands your patterns, and compounds context with every interaction — permanently. Your data never leaves your machine. Your agent works exclusively for you.
+Deploy it once. It learns your history, understands your patterns, and compounds context with every interaction — permanently. No more fish-memory chat windows that forget everything the moment you close the tab. worldv2 stores everything in a local vector database, building a permanent, searchable record of your life. Your data never leaves your machine. Your agent works exclusively for you.
 
 This isn't a chatbot. This is **your own personal intelligence infrastructure**.
 
