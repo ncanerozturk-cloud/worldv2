@@ -4,3 +4,5 @@ slack-bolt
 python-dotenv
 openai
 apscheduler
+pdfplumber
+requests

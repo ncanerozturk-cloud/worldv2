@@ -97,3 +97,33 @@ class QdrantMemory:
             }
             for hit in results.points
         ]
+
+    def get_recent_ingested(self, limit: int = 10) -> list:
+        """
+        Return the most recently ingested file chunks (PDFs, text files).
+        Used to ensure uploaded documents always appear in agent context.
+        """
+        from qdrant_client.models import Filter, FieldCondition, MatchAny
+
+        results, _ = self.client.scroll(
+            collection_name=COLLECTION_NAME,
+            scroll_filter=Filter(
+                must=[
+                    FieldCondition(
+                        key="type",
+                        match=MatchAny(any=["ingested_pdf", "ingested_file", "ingested_text"]),
+                    )
+                ]
+            ),
+            limit=limit,
+            with_payload=True,
+            with_vectors=False,
+        )
+
+        return [
+            {
+                "text": point.payload.get("text", ""),
+                "metadata": {k: v for k, v in point.payload.items() if k != "text"},
+            }
+            for point in results
+        ]
