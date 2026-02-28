@@ -458,9 +458,10 @@ function connectWS(){
     };
     ws.onmessage=e=>handleEvent(JSON.parse(e.data));
     ws.onclose=()=>{
+      demoActive=false;
       document.getElementById('wdot').className='wdot demo';
-      document.getElementById('wlabel').textContent='DEMO MODE — reconnecting...';
-      setTimeout(connectWS,4000);
+      document.getElementById('wlabel').textContent='DISCONNECTED — reconnecting...';
+      setTimeout(connectWS,1000);
     };
     ws.onerror=()=>{};
   }catch(e){}

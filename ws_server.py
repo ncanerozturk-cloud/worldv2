@@ -42,7 +42,7 @@ def start(host: str = "localhost", port: int = 8765):
         asyncio.set_event_loop(_ws_loop)
 
         async def _serve():
-            async with websockets.serve(_handler, host, port):
+            async with websockets.serve(_handler, host, port, ping_interval=10, ping_timeout=5):
                 log.info(f"[WS] Dashboard server running on ws://{host}:{port}")
                 await asyncio.Future()  # run forever
 

@@ -102,14 +102,15 @@ class HealthSportAgent:
                 date = r["metadata"].get("date", "unknown date")
                 lines.append(f"[{i}] (score: {r['score']}) [{date}] {r['text']}")
 
-        # 2. Recently ingested files (always surfaced so uploads are never missed)
-        ingested = self.memory.get_recent_ingested(limit=10)
-        if ingested:
-            lines.append("\n=== Uploaded Documents ===")
-            for r in ingested:
+        # 2. Recently ingested files — only today's uploads to keep context lean
+        ingested = self.memory.get_recent_ingested(limit=4)
+        today = datetime.now().strftime("%Y-%m-%d")
+        ingested_today = [r for r in ingested if r["metadata"].get("date") == today]
+        if ingested_today:
+            lines.append("\n=== Uploaded Documents (today) ===")
+            for r in ingested_today:
                 source = r["metadata"].get("file_name") or r["metadata"].get("source_file", "unknown")
-                date = r["metadata"].get("date", "unknown date")
-                lines.append(f"[{source}] [{date}] {r['text']}")
+                lines.append(f"[{source}] {r['text']}")
 
         return "\n".join(lines)
 
@@ -175,7 +176,7 @@ class HealthSportAgent:
 
         ws_server.send_event({"type": "agent_responding"})
         response = self.client.messages.create(
-            model="claude-opus-4-6",
+            model="claude-sonnet-4-6",
             max_tokens=4096,
             system=system_prompt,
             messages=self.conversation_history,
