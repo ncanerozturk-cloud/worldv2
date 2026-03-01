@@ -33,9 +33,9 @@ This isn't a chatbot. This is **your own personal intelligence infrastructure**.
                ▼                      ▼                      ▼
  ┌─────────────────────┐  ┌───────────────────────┐  ┌──────────────────────┐
  │  HEALTH/SPORT AGENT │  │    QDRANT  (Docker)   │  │  WEBSOCKET  :8765    │
- │  claude-opus-4-6    │  │    caneros_memory      │  │  dashboard.html      │
+ │  claude-opus-4-6    │  │    caneros_memory     │  │  dashboard.html      │
  │  auto-fact extract  │◄─►  vector search+store  │  │  pixel art monitor   │
- │  context injection  │  │  OpenAI embeddings     │  │  real-time events    │
+ │  context injection  │  │  OpenAI embeddings    │  │  real-time events    │
  └─────────────────────┘  └───────────────────────┘  └──────────────────────┘
                │                      │
                ▼                      ▼
